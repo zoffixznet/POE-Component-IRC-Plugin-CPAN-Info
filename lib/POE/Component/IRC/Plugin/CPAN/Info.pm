@@ -221,7 +221,7 @@ sub _fetched {
 }
 
 sub _got_info {
-    my ( $kernel, $self, $input ) = @_[ KERNEL, OBJECT, ARG0 ];
+    my ( $self, $input ) = @_[ OBJECT, ARG0 ];
 
     warn "_got_info success"
         if $self->{debug};
@@ -637,6 +637,10 @@ __END__
 
 =encoding utf8
 
+=for Pod::Coverage PCI_register PCI_unregister S_msg S_notice S_public new
+
+=for stopwords  FYI addon bot desc dists hasref privmsg
+
 =head1 NAME
 
 POE::Component::IRC::Plugin::CPAN::Info - PoCo::IRC plugin for accessing
@@ -644,6 +648,7 @@ information about CPAN modules, distributions and authors.
 
 =head1 SYNOPSIS
 
+=for test_synopsis BEGIN { die "SKIP: "; }
 
     use strict;
     use warnings;
@@ -707,27 +712,10 @@ the bot, for the database to be built (it might take a couple of minutes).
 The module is a L<POE::Component::IRC> plugin which uses
 L<POE::Component::IRC::Plugin> for easy addon of the module.
 
-The module provides interface for quering information about CPAN authors,
+The module provides interface for querying information about CPAN authors,
 (e.g. full name and email address), modules (e.g. version and
 description) and distributions (e.g. list of modules the distribution
 contains and author of the distribution).
-
-=head1 *GASP* FEATURITIS?
-
-Before I begin to present you my wonderful creation I feel like I should
-calm you down a bit. Yes, you, I can see you looking over at the
-"pageage" of this doc. For a second it may seem that
-POE::Component::IRC::Plugin::CPAN::Info suffers from featuritis with
-all those options in the contructor. But in fact, it doesn't. Plugin
-does (relatively) a lot, and all I did is make it possible for you
-to configure what it does. All settings have sensible defaults, and
-the very basics you need to start using the plugin is
-
-    $irc->plugin_add(
-        'CPANInfo' => POE::Component::IRC::Plugin::CPAN::Info->new
-    );
-
-It's that easy.
 
 =head1 DEFAULT COMMANDS
 
@@ -778,7 +766,7 @@ you would specify
 
 But I am getting ahead of myself.. more on this later.
 
-=head1 CONTRUCTOR
+=head1 CONSTRUCTOR
 
     # "Vanilla" plugin
     $irc->plugin_add(
@@ -831,9 +819,9 @@ But I am getting ahead of myself.. more on this later.
     );
     $irc->plugin_add( 'CPANInfo' => $cpan_info_plugin );
 
-The contructor returns an object suitable to be fed to
+The constructor returns an object suitable to be fed to
 L<POE::Component::IRC>'s C<plugin_add()> method. It may take a lot of
-arguments, luckly all of them are optional with sensible defaults. The
+arguments, luckily all of them are optional with sensible defaults. The
 possible options are as follows:
 
 =head2 mirror
@@ -867,7 +855,7 @@ inside the current directory.
 
 The C<freshen_interval> specifies (in seconds) how often should the
 component retrieve a fresh copy of CPAN files (described in C<mirror>
-option above). If an error occured during fetching of the files, the
+option above). If an error occurred during fetching of the files, the
 component will I<retry> in C<freshen_interval> or 30 seconds, whichever
 is sooner.
 B<Defaults to:> C<43200> (half a day)
@@ -878,7 +866,7 @@ B<Defaults to:> C<43200> (half a day)
 
 Specifies whether or not the component should emit any events which
 are described below. When set to a true value the plugin will
-emit the events, otherwise won't. Techinally it is possible to disable any
+emit the events, otherwise won't. Technically, it is possible to disable any
 native plugin output (see C<listen_for_input> argument below) and respond
 only by listening to the events it sends. B<Defaults to:> C<1>
 
@@ -886,14 +874,14 @@ only by listening to the events it sends. B<Defaults to:> C<1>
 
     ->new( got_info_event      => 'cpaninfo_got_info' );
 
-Upon successful retrieval of the files and successful proccessing of those
+Upon successful retrieval of the files and successful processing of those
 the component will emit the event specified by C<got_info_event> argument.
-The handler will recieve the output of Perl's C<time()> function as
+The handler will receive the output of Perl's C<time()> function as
 the only argument of C<ARG0> which will indicate the time at which
 the event was sent. Generally, on slow boxes the processing of the files
 can take some time (it's all non-blocking, don't worry) thus if you
 are just starting the component, it won't have data readily available
-until you recieve the first C<got_info_event>. B<Defaults to:>
+until you receive the first C<got_info_event>. B<Defaults to:>
 C<cpaninfo_got_info>
 
 =head2 no_result_event
@@ -926,7 +914,7 @@ requested information is missing, otherwise it will randomly choose one
 of the C<no_result_responses> (see below) and reply with that. I<Note:>
 this doesn't affect the cases when triggers (see C<triggers> below)
 don't match, it only affects the cases when a particular command matched
-but data is not available such as asking for a version of a non-existant
+but data is not available such as asking for a version of a non-existent
 module. B<Defaults to:> C<1>
 
 =head2 no_result_responses
@@ -934,7 +922,7 @@ module. B<Defaults to:> C<1>
     ->new( no_result_responses => [ 'No clue', 'No idea', 'Waddayawant?' ] );
 
 If the trigger for a command matched (see C<triggers> below) but the
-data is not available (e.g. asking for a version of a non-existant module)
+data is not available (e.g. asking for a version of a non-existent module)
 and C<respond_no_result> option (see above) is set to a I<true value>.
 The component will respond with one of the randomly chosen responses.
 Those responses are defined by the C<no_result_responses> argument
@@ -948,7 +936,7 @@ C<[ 'No clue', 'No idea' ]>
 The plugin has a built in "help system" to refresh the memory about
 available commands (no, you don't actually have to keep this doc open
 all the time :) ). The details are explained in HELP MESSAGES section.
-The C<show_help> key to the contructor enables or disables the help
+The C<show_help> key to the constructor enables or disables the help
 system. When C<show_help> argument is set to a true value, plugin
 will respond to help inquiries, otherwise the help system will be off.
 B<Defaults to:> C<1>
@@ -1050,7 +1038,7 @@ B<Defaults to:> C<300>
     ->new( max_output_length => 600 );
 
 This argument controls the maximum length of the output, but see
-also C<max_output_length_pub> argument below. If any ouput
+also C<max_output_length_pub> argument below. If any output
 is longer than C<max_output_length> characters it will be chopped off
 with C<...> appended. I<Note:> if this argument is set
 to a lower value than C<max_modules_length> (see above), then output from
@@ -1140,7 +1128,7 @@ information.
     );
 
 Takes a hashref of arguments, those will be passed to L<LWP::UserAgent>'s
-contrustor. B<Defaults to:> whatever L<LWP::UserAgent>'s constructor
+constructor. B<Defaults to:> whatever L<LWP::UserAgent>'s constructor
 defaults are, B<except> C<timeout> which defaults to C<30>.
 
 =head1 TRIGGERS
@@ -1168,11 +1156,11 @@ system (see HELP MESSAGES section below) which you will need to change
 as well because it will tell the users about default triggers
 not the ones you've set up.
 
-The following hashref is what the contructor's C<triggers> argument takes,
+The following hashref is what the constructor's C<triggers> argument takes,
 it represents default triggers set up on the plugin. If you want
 to change only one trigger just specify it as
 C<-E<gt>new( triggers => { mod => { desc => qr/^description\s+/i } } );
-no need to repeat every triggier, the rest will be left at the defaults.
+no need to repeat every trigger, the rest will be left at the defaults.
 
     {
         mod_cat  => qr/ ^ mod_ /xi,
@@ -1203,19 +1191,19 @@ no need to repeat every triggier, the rest will be left at the defaults.
 
 =head1 HELP MESSAGES
 
-The component has a built in help system (which is can be distabled).
-The hashref presented below is what the contructor's C<help>
+The component has a built in help system (which is can be disabled).
+The hashref presented below is what the constructor's C<help>
 argument takes,
 it represents default triggers set up on the plugin. If you want
 to change only one trigger just specify it as
 C<-E<gt>new( triggers => { mod => { desc => 'description' } } );
-no need to repeat every triggier, the rest will be left at the defaults.
+no need to repeat every trigger, the rest will be left at the defaults.
 B<Note:> as opposed to C<triggers> hashref, the C<help> hashref
 contains a bunch of strings, B<NOT> regex references.
 
 The only key that takes a C<qr//> is a C<help_re>, this key determines the
 help system trigger, as with other triggers (see TRIGGERS section above)
-the trigger will be removed before matching agains help system commands.
+the trigger will be removed before matching against help system commands.
 The commands are matched in the following fashion: if it starts
 with a category prefix, remove it and see if it contains the command now.
 In other words, with the default settings, message containing
@@ -1249,7 +1237,7 @@ In other words, both of these will give help for C<mod_distname> command:
         },
     );
 
-Here is a hashref with the possible contructor's C<help> argument's
+Here is a hashref with the possible constructor's C<help> argument's
 keys and their default values.
 
     {
@@ -1279,19 +1267,19 @@ keys and their default values.
         },
     };
 
-=head1 EMITED EVENTS
+=head1 EMITTED EVENTS
 
 The plugin emits three different events (if enabled, and by default it is).
 The names of the events may be configured with: C<got_info_event>
-C<no_result_event> and C<response_event> arguments to the contructor.
+C<no_result_event> and C<response_event> arguments to the constructor.
 
 =head2 output from got_info_event
 
 The C<got_info_event> event will be sent out each time the plugin
 successfully parses CPAN data files. On a slow box this process may
 take a while (though it's non-blocking), therefore you won't be
-able to inquire the plugin about any data until you recieve at least
-one C<got_info_event> event. The event handler will recieve the output
+able to inquire the plugin about any data until you receive at least
+one C<got_info_event> event. The event handler will receive the output
 of Perl's C<time()> function in it's C<ARG0> argument which will
 be the time at which the event was sent.
 
@@ -1306,10 +1294,10 @@ be the time at which the event was sent.
     };
 
 The the handler for the event specified by C<no_result_event>
-will recieve events
+will receive events
 whenever the a particular command matches but there is no data available.
 For example, when request for C<mod_version> is made asking for the
-version of a non-existant module.
+version of a non-existent module.
 
 =head2 output from response_event
 
@@ -1323,7 +1311,7 @@ version of a non-existant module.
     };
 
 The handler set up for the event specified by C<respose_event> will
-recieve event whenever a command request was made which produced useful
+receive event whenever a command request was made which produced useful
 output.
 
 =for pod_spiffy hr
